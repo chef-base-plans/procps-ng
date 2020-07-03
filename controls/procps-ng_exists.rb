@@ -7,7 +7,9 @@ control 'core-plans-procps-ng-exists' do
   impact 1.0
   title 'Ensure procps-ng exists'
   desc '
-  Verify procps-ng by ensuring bin/free exists'
+  Verify procps-ng by ensuring all binaries 
+  (1) exist and
+  (2) are executable'
   
   plan_installation_directory = command("hab pkg path #{plan_origin}/#{plan_name}")
   describe plan_installation_directory do
@@ -16,9 +18,27 @@ control 'core-plans-procps-ng-exists' do
     its('stderr') { should be_empty }
   end
 
-  command_relative_path = input('command_relative_path', value: 'bin/free')
-  command_full_path = File.join(plan_installation_directory.stdout.strip, "#{command_relative_path}")
-  describe file(command_full_path) do
-    it { should exist }
+  [
+    "free",
+    "pgrep",
+    "pidof",
+    "pkill",
+    "pmap",
+    "ps",
+    "pwdx",
+    "slabtop",
+    "sysctl",
+    "tload",
+    "top",
+    "uptime",
+    "vmstat",
+    "w",
+    "watch",
+  ].each do |binary_name|
+    command_full_path = File.join(plan_installation_directory.stdout.strip, "bin", binary_name)
+    describe file(command_full_path) do
+      it { should exist }
+      it { should be_executable }
+    end
   end
 end
